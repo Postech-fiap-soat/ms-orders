@@ -5,10 +5,11 @@ from sqlalchemy import create_engine, Table, MetaData, select, update, insert, C
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import sessionmaker, Session
 from datetime import datetime
+from requests import post
 import os
 
 # Configuração do SQLAlchemy
-DATABASE_URL = "mysql+mysqlconnector://user:password@db:3306/pedido"
+DATABASE_URL = "mysql+mysqlconnector://user:password@db-pedido:3306/pedido"
 engine = create_engine(DATABASE_URL)
 metadata = MetaData()
 
@@ -31,7 +32,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 app = FastAPI()
 
-'''
+
 def self_register():    
     url = "http://kong:8001/upstreams/pedido/targets"
     payload = {
@@ -48,7 +49,7 @@ def self_register():
 
 status_register = self_register()
 print(status_register)
-'''
+
 class Product(BaseModel):
     id: int
     code: str
@@ -79,7 +80,7 @@ class Order(BaseModel):
     totalPrice: float
 
 #Criar pedido
-@app.post("/create_order")
+@app.post("/pedido")
 async def create_order(order: Order):
     # Criar uma nova sessão
     session = SessionLocal()
@@ -111,7 +112,7 @@ async def create_order(order: Order):
         session.close()
 
 #Obter pedido pelo ID  
-@app.get("/order/{order_id}")
+@app.get("/pedido/{order_id}")
 async def obter_pedido(order_id: int):
     query = select(pedido).where(pedido.columns.id == order_id)
     with engine.connect() as connection:
@@ -128,7 +129,7 @@ async def obter_pedido(order_id: int):
             raise HTTPException(status_code=404, detail="Pedido não encontrado")
         
 #Obter todos os pedidos
-@app.get("/orders", response_model=List[dict])
+@app.get("/pedidos", response_model=List[dict])
 async def get_all_orders(skip: int = 0, limit: int = 10):
     query = select(pedido).offset(skip).limit(limit)
     with engine.connect() as connection:
@@ -144,7 +145,7 @@ async def get_all_orders(skip: int = 0, limit: int = 10):
             raise HTTPException(status_code=404, detail="Pedido não encontrado")
         
 #Obter pedido pelo status
-@app.get("/orders/status/{status}", response_model=List[dict])
+@app.get("/pedido/status/{status}", response_model=List[dict])
 async def get_orders_by_status(status: int = Path(..., title="Status do Pedido", description="Status do pedido a ser filtrado")):
     valid_statuses = {1, 2, 3, 4}
     if status not in valid_statuses:
@@ -154,6 +155,8 @@ async def get_orders_by_status(status: int = Path(..., title="Status do Pedido",
     with engine.connect() as connection:
         try:
             result = connection.execute(query).fetchall()
+            if result is None:
+                raise HTTPException(status_code=404, detail="Nenhum pedido com status informado")
             orders = []
             column_names = [column.name for column in pedido.c]
             for row in result:
@@ -164,14 +167,16 @@ async def get_orders_by_status(status: int = Path(..., title="Status do Pedido",
             raise HTTPException(status_code=404, detail="Nenhum pedido com status informado")
         
 #Obter pedidos nao concluidos
-@app.get("/orders/uncompleted", response_model=List[dict])
+@app.get("/pedido_uncompleted", response_model=List[dict])
 async def get_uncompleted_orders():
-    uncompleted_status = {1, 2, 3}  # Status que são considerados não concluídos
-    query = select(pedido).where(pedido.columns.order_status.in_(uncompleted_status))
+    uncompleted_status = 4 # Status que são considerados não concluídos
+    query = select(pedido).where(pedido.columns.order_status != uncompleted_status)
     with engine.connect() as connection:
         try:
             result = connection.execute(query).fetchall()
             orders = []
+            if not result:
+                raise HTTPException(status_code=404, detail="Nenhum pedido pendente")
             column_names = [column.name for column in pedido.c]
             for row in result:
                 order_dict = dict(zip(column_names, row))
@@ -181,7 +186,7 @@ async def get_uncompleted_orders():
             raise HTTPException(status_code=404, detail="Nenhum pedido pendente")
         
 #Atualizar pedido
-@app.put("/order/update_status/{order_id}")
+@app.put("/pedido/update_status/{order_id}")
 async def update_order_status(order_id: int, new_status: int):
     # Criar uma nova sessão
     session = SessionLocal()
@@ -212,7 +217,7 @@ async def update_order_status(order_id: int, new_status: int):
         session.close()
 
 #Checkout do pedido
-@app.put("/order/checkout/{order_id}")
+@app.put("/pedido/checkout/{order_id}")
 async def checkout_order(order_id: int):
     # Criar uma nova sessão
     session = SessionLocal()
