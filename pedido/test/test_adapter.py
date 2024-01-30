@@ -49,7 +49,7 @@ class TestPedidoHTTPAPIAdapter(TestCase):
         
         self.assertEqual(response, {"message": "Produto criado com sucesso"})
         self.pedido_service.criar_produto.assert_called()
-    '''
+    
     @patch('adapter.http_api.Produto')
     def testCriarProdutoComErro400(self, MockProdutoRequest):
         mockProdutoRequest = Mock()
@@ -97,7 +97,7 @@ class TestPedidoHTTPAPIAdapter(TestCase):
             # Verificando o código de status da exceção
             self.assertEqual(context.exception.status_code, 400)
             self.assertTrue("Erro ao criar produto: Campo Categoria é obrigatório" in str(context.exception.detail))
-    '''
+    
     @patch('adapter.http_api.Produto')
     def testObterPedidoComSucesso(self, MockPedidoRequest):
         mockPedidoRequest = Mock()
