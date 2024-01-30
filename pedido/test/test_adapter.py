@@ -1,14 +1,13 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
 from adapter.exceptions import *
-from port.repositories import *
-from port.event_publishers import *
 from adapter.http_api import PedidoHTTPAPIAdapter
 from domain.exceptions import IdInvalido,CategoriaInvalido
+from domain.models import *
 from fastapi import HTTPException
 from adapter.sqs_adapter import *
 from adapter.mysql_adapter import *
-from domain.services import *
+
 
 class TestPedidoHTTPAPIAdapter(TestCase): 
     def setUp(self):

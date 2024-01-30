@@ -1,4 +1,4 @@
-from unittest import TestCase
+
 import unittest
 from unittest.mock import patch, Mock
 from domain.services import PedidoService
