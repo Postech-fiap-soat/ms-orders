@@ -7,6 +7,7 @@ from domain.models import *
 from fastapi import HTTPException
 from adapter.sqs_adapter import *
 from adapter.mysql_adapter import *
+import unittest
 
 
 class TestPedidoHTTPAPIAdapter(TestCase): 
@@ -189,3 +190,5 @@ class TestPedidoHTTPAPIAdapter(TestCase):
         self.httpAdapter.deletar_produto(mockProdutoRequest)
 
 
+if __name__ == "__main__":
+    unittest.main()
