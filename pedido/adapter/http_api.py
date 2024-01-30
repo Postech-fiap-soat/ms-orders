@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from domain.models import *
+from domain.models import Produto,Pedido
 from domain.exceptions import *
 from domain.services import PedidoService 
 

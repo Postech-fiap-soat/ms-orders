@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Table, MetaData, select, update, insert, C
 from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from typing import Optional
-from domain.models import *
+from domain.models import Produto,Pedido
 from adapter.exceptions import DatabaseException
 from port.repositories import PedidoRepository
 

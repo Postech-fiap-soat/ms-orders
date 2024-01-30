@@ -1,5 +1,5 @@
 from typing import List
-from domain.models import *
+from domain.models import Produto,Pedido
 from domain.exceptions import *
 from port.repositories import PedidoRepository
 from port.event_publishers import PedidoEventPublisher
