@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Table, MetaData, select, update, insert, Column, String, Text, Integer, Float, ForeignKey, delete
 from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.exc import NoResultFound, IntegrityError
-from typing import Optional
+from typing import Optional, List 
 from domain.models import Produto,Pedido
 from adapter.exceptions import DatabaseException
 from port.repositories import PedidoRepository
