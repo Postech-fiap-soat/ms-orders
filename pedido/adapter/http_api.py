@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from domain.models import Produto,Pedido
 from domain.exceptions import *
 from domain.services import PedidoService 
+from typing import Optional
 
 class PedidoHTTPAPIAdapter:
     def __init__(self, pedido_service: PedidoService):
