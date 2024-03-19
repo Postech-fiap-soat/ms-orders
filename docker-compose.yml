@@ -48,10 +48,10 @@ services:
   
 
   
-  #test-pedido:
-    #build:
-      #context: pedido/
-      #dockerfile: Dockerfile.test
-    #volumes:
-      #- ./pedido:/app
-      #- ./reports:/reports
+  test-pedido:
+    build:
+      context: pedido/
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./pedido:/app
+      - ./reports:/reports
