@@ -2,21 +2,28 @@ from fastapi import FastAPI
 from adapter.http_api import PedidoHTTPAPIAdapter
 from domain.services import PedidoService
 from adapter.mysql_adapter import PedidoMySQLAdapter
-from adapter.sqs_adapter import SQSAdapter
+from adapter.rabbitmq_adapter import RabbitMQAdapter
 
 DATABASE_URL = "mysql+mysqlconnector://pedido_user:Mudar123!@db-servicos:3306/pedido"
-QUEUE_NAME = "pedido-atualizacao"
-ENDPOINT_URL='http://localstack:4566'
-REGION_NAME='us-east-1'
-AWS_ACCESS_KEY_ID='LKIAQAAAAAAAEF5TP5ML'
-AWS_SECRET_ACCESS_KEY='D/t43L7EiqM7JnY96oufhfsjL1+SFu8REWtxCi5d'
+
+RABBITMQ_HOST = 'rabbitmq'
+RABBITMQ_PORT = 5672
+RABBITMQ_USERNAME = 'guest'
+RABBITMQ_PASSWORD = 'guest'
+RABBITMQ_QUEUE_NAME = 'pedido'
 
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
     pedido_mysql_adapter = PedidoMySQLAdapter(DATABASE_URL)
-    sqs_adapter = SQSAdapter(QUEUE_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ENDPOINT_URL, REGION_NAME)
-    pedido_service = PedidoService(pedido_mysql_adapter, sqs_adapter)
+    rabbitmq_adapter = RabbitMQAdapter(
+        host=RABBITMQ_HOST,
+        port=RABBITMQ_PORT,
+        username=RABBITMQ_USERNAME,
+        password=RABBITMQ_PASSWORD,
+        queue_name=RABBITMQ_QUEUE_NAME
+    )
+    pedido_service = PedidoService(pedido_mysql_adapter, rabbitmq_adapter)
     http_api_adapter = PedidoHTTPAPIAdapter(pedido_service)
     app.include_router(http_api_adapter.router)

@@ -293,6 +293,24 @@ class PedidoMySQLAdapter(PedidoRepository): # pragma: no cover
                 return produto
             except NoResultFound:
                 raise on_not_found
+            
+    def buscarProdutos(self, on_not_found: Exception) -> List[Produto]:
+        query = select(self.__produto_table)
+
+        with self.__engine.connect() as connection:
+            try:
+                result = connection.execute(query).fetchone()
+                if result is None:
+                    raise on_not_found
+        
+                # Mapear valores para nomes de colunas
+                produto_column_names = [column.name for column in self.__produto_table.c]
+                produto_dict = dict(zip(produto_column_names, result))
+
+                
+                return produto_dict
+            except NoResultFound:
+                raise on_not_found
 
     def excluirProduto(self, produto_id: int, on_not_found: Exception):
         session = self.__session()

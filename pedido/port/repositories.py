@@ -36,6 +36,10 @@ class PedidoRepository(ABC): # pragma: no cover
         pass
 
     @abstractmethod
+    def buscarProdutos(self, on_not_found: Exception) -> Optional[List[Produto]]:
+        pass
+
+    @abstractmethod
     def buscarProdutoPorID(self, id: int, on_not_found: Exception) -> Produto:
         pass
     

@@ -20,6 +20,7 @@ class PedidoHTTPAPIAdapter:
         self.router.add_api_route("/produto/{produto_id}", self.obter_produto, methods=["GET"])
         self.router.add_api_route("/produto/{produto_id}", self.atualizar_produto, methods=["PUT"])
         self.router.add_api_route("/produto/{produto_id}", self.deletar_produto, methods=["DELETE"])
+        self.router.add_api_route("/produtos", self.obter_produtos, methods=["GET"])
 
 
 
@@ -36,10 +37,18 @@ class PedidoHTTPAPIAdapter:
     def obter_produto(self, produto_id: int):
         try:
             return self.__pedido_service.obter_produto(produto_id)
-        except PedidoNaoEncontrado as e:
+        except ProdutoNaoEncontrado as e:
             raise HTTPException(status_code=404, detail=f"Erro ao obter produto: {e}")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Erro ao obter produto: {e}")
+        
+    def obter_produtos(self):
+        try:
+            return self.__pedido_service.obter_produtos()
+        except ProdutoNaoEncontrado as e:
+            raise HTTPException(status_code=404, detail=f"Erro ao obter produtos: {e}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Erro ao obter produtos: {e}")
     
     def atualizar_produto(self, produto_id: int, produto_atualizado: Produto):
         try:

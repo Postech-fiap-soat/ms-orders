@@ -2,25 +2,12 @@ version: '3.9'
 
 volumes:
   db_servicos_data:
-  localstack_data:
+  rabbitmq_data:
 networks:
   fiap-order:
     external: false
 
 services:
-  localstack:
-    image: localstack/localstack:2.2.0
-    ports:
-      - "127.0.0.1:4566:4566"
-      - "127.0.0.1:4510-4559:4510-4559"
-    environment:
-      - DEBUG=${DEBUG-}
-      - LOCALSTACK_PERSISTENCE=1
-    volumes:
-      - "localstack_data:/var/lib/localstack"
-    networks:
-      - fiap-order
-
   db-servicos:
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
@@ -34,6 +21,20 @@ services:
       - ./migrations:/docker-entrypoint-initdb.d
     networks:
       - fiap-order
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq 
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    networks:
+      - fiap-order
   
   pedido-ms-orders:
     build: pedido/
@@ -41,13 +42,16 @@ services:
       - "8181:8080"
     depends_on:
       - db-servicos
+      - rabbitmq
     networks:
       - fiap-order
+  
 
-  test-pedido:
-    build:
-      context: pedido/
-      dockerfile: Dockerfile.test
-    volumes:
-      - ./pedido:/app
-      - ./reports:/reports
+  
+  #test-pedido:
+    #build:
+      #context: pedido/
+      #dockerfile: Dockerfile.test
+    #volumes:
+      #- ./pedido:/app
+      #- ./reports:/reports

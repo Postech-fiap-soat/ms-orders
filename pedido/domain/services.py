@@ -2,12 +2,15 @@ from typing import List, Optional
 from domain.models import Produto,Pedido
 from domain.exceptions import *
 from port.repositories import PedidoRepository
-from port.event_publishers import PedidoEventPublisher
+from adapter.rabbitmq_adapter import RabbitMQAdapter
+import pika.exceptions
+from fastapi.encoders import jsonable_encoder
+import json
 
 class PedidoService:
-    def __init__(self, pedido_repository: PedidoRepository, pedido_event_publisher: PedidoEventPublisher):
+    def __init__(self, pedido_repository: PedidoRepository, pedido_rabbitmq_adapter: RabbitMQAdapter):
         self.__pedido_repository = pedido_repository
-        self.__pedido_event_publisher = pedido_event_publisher
+        self.__pedido_rabbitmq_adapter = pedido_rabbitmq_adapter
 
         
     def validar_id(self, id: int):
@@ -33,7 +36,6 @@ class PedidoService:
     def criar_produto(self, novo_produto: Produto):
         try:
             self.__pedido_repository.inserirProduto(novo_produto, on_duplicate_sku=ProdutoJaExiste("Produto já existente"))
-            self.__pedido_event_publisher.publicarProduto(novo_produto)
         except Exception as e:
             raise ErroAoCriarProduto(f"Erro ao criar produto: {e}")
 
@@ -43,12 +45,18 @@ class PedidoService:
             return produto
         except Exception as e:
             raise ErroAoObterProduto(f"Erro ao obter produto: {e}")
+        
+    def obter_produtos(self) -> List[Produto]:
+        try:
+            produtos = self.__pedido_repository.buscarProdutos(on_not_found=ProdutoNaoEncontrado("Produtos não encontrados"))
+            return produtos
+        except Exception as e:
+            raise ErroAoObterProduto(f"Erro ao obter produtos: {e}")
     
     def atualizar_produto(self, id: int, produto: Produto):
         try:
             produto.id = id
             self.__pedido_repository.atualizarProduto(produto, on_not_found=ProdutoNaoEncontrado("Produto não encontrado"))
-            self.__pedido_event_publisher.publicarProduto(produto)
         except Exception as e:
             raise ErroAoAtualizarProduto(f"Erro ao atualizar produto: {e}")
     
@@ -64,9 +72,26 @@ class PedidoService:
     def criar_pedido(self, novo_pedido: Pedido):
         try:
             self.__pedido_repository.inserirPedido(novo_pedido, on_duplicate_sku=PedidoJaExistente("Pedido já existente"))
-            self.__pedido_event_publisher.publicar(novo_pedido)
         except Exception as e:
             raise ErroAoCriarPedido(f"Erro ao criar pedido: {e}")
+        
+        # Tente conectar ao RabbitMQ e publicar a mensagem
+        try:
+            novo_pedido_dict = jsonable_encoder(novo_pedido)
+            pedido_json = json.dumps(novo_pedido_dict)
+            self.__pedido_rabbitmq_adapter.connect()
+            self.__pedido_rabbitmq_adapter.publish_message(pedido_json)
+            self.__pedido_rabbitmq_adapter.close_connection()
+        except pika.exceptions.AMQPConnectionError as e:
+            print(str(e)+str(Exception))
+            raise ErroAoCriarPedido(f"Erro ao conectar ao Rabbit: {e}")
+        except pika.exceptions.AMQPError as e:
+            print(str(e))
+            raise ErroAoCriarPedido(f"Erro ao publicar mensagem no RabbitMQ: {e}")
+
+        
+            
+            
         
     def obter_pedido(self, order_id: int) -> Pedido:
         try:
