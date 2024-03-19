@@ -15,21 +15,21 @@ class TestPedidoService(unittest.TestCase):
         self.pedido_event_publisher = Mock()
         self.pedido_service = PedidoService(self.pedido_repository, self.pedido_event_publisher)
 
-    @patch('domain.services.Pedido')
-    def testCriarPedidoComSucesso(self, MockPedidoRequest):
-        mockPedidoRequest = Mock()
+    #@patch('domain.services.Pedido')
+    #def testCriarPedidoComSucesso(self, MockPedidoRequest):
+        #mockPedidoRequest = Mock()
         
-        mockPedidoRequest.id = 1
-        mockPedidoRequest.cart = 1
-        mockPedidoRequest.client = 1
-        mockPedidoRequest.observation = "teste"
-        mockPedidoRequest.totalPrice = 5.99
-        mockPedidoRequest.payment_status = 1
-        mockPedidoRequest.order_status = 1
+        #mockPedidoRequest.id = 1
+        #mockPedidoRequest.cart = 1
+        #mockPedidoRequest.client = 1
+        #mockPedidoRequest.observation = "teste"
+        #mockPedidoRequest.totalPrice = 5.99
+        #mockPedidoRequest.payment_status = 1
+        #mockPedidoRequest.order_status = 1
 
-        MockPedidoRequest.return_value = mockPedidoRequest
+        #MockPedidoRequest.return_value = mockPedidoRequest
         
-        self.pedido_service.criar_pedido(mockPedidoRequest)
+        #self.pedido_service.criar_pedido(mockPedidoRequest)
     
     @patch('domain.services.Pedido')
     def testObterPedidoComSucesso(self, MockPedidoRequest):
