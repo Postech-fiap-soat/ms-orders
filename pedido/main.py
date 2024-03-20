@@ -10,7 +10,7 @@ RABBITMQ_HOST = 'rabbitmq'
 RABBITMQ_PORT = 5672
 RABBITMQ_USERNAME = 'guest'
 RABBITMQ_PASSWORD = 'guest'
-RABBITMQ_QUEUE_NAME = 'pedido'
+RABBITMQ_QUEUE_NAME = 'key_pedidos'
 
 app = FastAPI()
 

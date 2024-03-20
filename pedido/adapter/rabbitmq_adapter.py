@@ -27,7 +27,7 @@ class RabbitMQAdapter:
         if self.channel is None or self.channel.is_closed:
             self.channel = self.connection.channel()
 
-        self.channel.basic_publish(exchange='', routing_key=self.queue_name, body=message)
+        self.channel.basic_publish(exchange='ex_pedidos', routing_key=self.queue_name, body=message)
 
 
     def close_connection(self):
